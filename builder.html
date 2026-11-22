@@ -256,6 +256,9 @@ h1 em{font-style:normal;border-bottom:2px solid var(--yellow);padding-bottom:1px
 .spin{width:26px;height:26px;border:2px solid var(--line-strong);border-top-color:var(--ink);border-radius:50%;margin:0 auto 12px;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
+@media (min-width:1181px){
+  .bld-grid{padding-right:54px}   /* 우측 플로팅 상담 바 자리 비우기 */
+}
 @media (max-width:1180px){
   .bld-grid{grid-template-columns:1fr}
   .rail{position:static;max-height:none;overflow:visible;order:2;grid-template-columns:1fr 1fr;align-items:start}
