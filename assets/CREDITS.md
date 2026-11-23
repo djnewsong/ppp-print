@@ -1,37 +1,28 @@
 # PPP 사이트 미디어 출처
 
-Pexels 무료 라이선스(출처 표기 불필요, 상업적 사용 가능) 소재입니다. 재배포·판매는 하지 않고 사이트 배경/섹션 이미지로만 사용합니다.
-
-## 영상
-
-| 파일 | 원본 | 용도 |
-|---|---|---|
-| `hero-fabric.mp4` (1280×720, 11s loop) | Pexels 30104841 — "Close-up Textured White Fabric Waves" (Nova lv) | 히어로 배경 |
-| `studio-film.mp4` (1280×720, 15s loop) | Pexels 4621703 — "A man is working on clothes in a room" (cottonbro studio) | 스튜디오 필름 섹션 |
+사이트에 쓰는 사진은 PPP가 사이트용으로 제작한 스튜디오 컷입니다. 외부에 판매하거나 재배포하지 않고, 홈페이지와 공유 썸네일 배경으로만 사용합니다.
 
 ## 사진
 
-| 파일 | 원본 | 용도 |
+| 파일 | 내용 | 쓰는 곳 |
 |---|---|---|
-| `hero-poster.jpg` | `hero-fabric.mp4` 1초 프레임 | 히어로 포스터/저해상 폴백 |
-| `studio-poster.jpg` | `studio-film.mp4` 8초 프레임 | 필름 포스터 |
-| `photo-rack.jpg` | Pexels 3965557 — 아틀리에 행거와 원단 | 필름 스트립, 상세페이지 |
-| `photo-press.jpg` | Pexels 9314012 — 티셔츠 프린트 작업 | 필름 스트립, 상세페이지 |
-| `photo-color.jpg` | Pexels 8146451 — 빨강·노랑·파랑 티셔츠 | 필름 스트립, 상세페이지 |
-| `photo-fabric.jpg` | Pexels 8465947 — 아이보리 원단의 결 | 강점 섹션 텍스처 밴드 |
-| `photo-warm.jpg` | Pexels 37704845 — 햇빛 아래 흰 티셔츠 | 임가공 섹션, 상세페이지 |
-| `photo-model.jpg` | Pexels 16069737 — 검정 무지티 착용 컷 | 완성티 섹션 |
+| `scene-hero.jpg` (1122×1402) | 헤비웨이트 검정 티셔츠 뒷면, 웜 톤 콘크리트 스튜디오 | 홈 히어로 |
+| `scene-film.jpg` (1536×1024) | 매트한 DTF 전사 필름 롤과 가장자리 도안 | DTF 필름 상단, 홈 서비스 카드 |
+| `scene-press.jpg` (1400×1120) | 접어 둔 아이보리, 검정 티셔츠와 열프레스 | 프레스 임가공 상단, 홈 서비스 카드 |
+| `scene-special.jpg` (1536×1024) | 렌티큘러 3D 프린트 원단 매크로 | 180cm 승화·스페셜 상단, 홈 서비스 카드 |
+| `og-image.jpg` (1200×630) | 로고와 티셔츠 컷 합성 | 카카오톡, 스레드 등 공유 썸네일 |
 
-상세페이지는 `work/ppp-detail-page/assets/`에 필요한 컷만 복사해 두었습니다.
+## 로고
 
-## 재생성
+| 파일 | 내용 |
+|---|---|
+| `logo.png` (640×640) | PPP 로고 원본. 파비콘, 애플 터치 아이콘, 푸터 |
+| `logo-band.png` (848×328) | 로고의 삼색 별 띠만 잘라 낸 헤더용 마크 |
 
-```bash
-python3 .render/build.py
-PLAYWRIGHT_BROWSERS_PATH=/workspace/.pw-browsers \
-LD_LIBRARY_PATH=/workspace/.deps/root/usr/lib/x86_64-linux-gnu \
-python3 .render/shoot_web.py
-PLAYWRIGHT_BROWSERS_PATH=/workspace/.pw-browsers \
-LD_LIBRARY_PATH=/workspace/.deps/root/usr/lib/x86_64-linux-gnu \
-python3 .render/shoot_detail.py
-```
+## 폰트
+
+폰트는 모두 SIL Open Font License 1.1입니다. Pretendard는 원저작자 배포본을, Space Grotesk와 Instrument Serif는 Google Fonts 배포본을 같은 이름으로 자체 호스팅합니다.
+
+## 이전 버전
+
+2026-11 이전 페이지에 쓰던 Pexels 무료 라이선스 영상과 사진(`hero-fabric.mp4`, `studio-film.mp4`, `photo-*.jpg`)은 새 디자인에서 쓰지 않아 저장소에서 제거했습니다. 이전 커밋에서 확인할 수 있습니다.

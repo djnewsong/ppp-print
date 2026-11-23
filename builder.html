@@ -198,6 +198,15 @@ h1 em{font-style:normal;border-bottom:2px solid var(--yellow);padding-bottom:1px
 .gauge .lb{display:flex;justify-content:space-between;align-items:baseline;margin-top:5px;font-size:10px;color:var(--ink-50);font-variant-numeric:tabular-nums}
 .gauge .lb b{font-size:11.5px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 
+/* 출력 해상도 / 타일 내보내기 */
+.exp{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.exp-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.exp-h span{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-50)}
+.exp-h b{font-family:"Space Grotesk",Pretendard,sans-serif;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.exp-h b.warn{color:var(--red)}
+.exp-n{font-size:9.5px;color:var(--ink-50);margin-top:3px;line-height:1.5;font-variant-numeric:tabular-nums}
+.exp .btn{width:100%;margin-top:8px;height:32px;font-size:10px;letter-spacing:.01em}
+
 /* ---------- stage ---------- */
 .stage-col{min-width:0}
 .stage-bar{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--line);border-bottom:0;background:rgba(250,248,242,.94);flex-wrap:wrap;position:sticky;top:60px;z-index:20;backdrop-filter:blur(12px)}
@@ -257,7 +266,10 @@ h1 em{font-style:normal;border-bottom:2px solid var(--yellow);padding-bottom:1px
 @keyframes sp{to{transform:rotate(360deg)}}
 
 @media (min-width:1181px){
-  .bld-grid{padding-right:54px}   /* 우측 플로팅 상담 바 자리 비우기 */
+  .bld-grid{padding-right:66px}   /* 우측 플로팅 상담 바 자리 비우기 */
+}
+@media (min-width:821px) and (max-width:1180px){
+  .rail{padding-right:56px}       /* 2열 레일에서도 10m 버튼이 플로팅 바와 겹치지 않게 */
 }
 @media (max-width:1180px){
   .bld-grid{grid-template-columns:1fr}
@@ -325,8 +337,8 @@ h1 em{font-style:normal;border-bottom:2px solid var(--yellow);padding-bottom:1px
     </a>
     <nav class="hd-nav">
       <a class="nv" href="index.html">홈</a>
-      <a class="nv" href="index.html#price">단가표</a>
-      <a class="nv" href="index.html#files">파일 규격</a>
+      <a class="nv" href="index.html#film">DTF 필름</a>
+      <a class="nv" href="index.html#quote">단가·파일 규격</a>
       <a class="btn btn-line btn-sm" href="https://naver.me/FORU0hO2" target="_blank" rel="noopener">주문서</a>
       <a class="btn btn-kakao btn-sm" href="https://pf.kakao.com/_HxhwvX/chat" target="_blank" rel="noopener">카톡 상담</a>
     </nav>
@@ -422,6 +434,15 @@ h1 em{font-style:normal;border-bottom:2px solid var(--yellow);padding-bottom:1px
         <div class="gauge">
           <div class="bar"><i id="meter-i" style="width:0%"></i></div>
           <div class="lb"><span id="g-use"><b>0%</b> 사용</span><span id="g-room">여유 100%</span></div>
+        </div>
+
+        <div class="exp">
+          <div class="exp-h">
+            <span>출력 해상도</span>
+            <b id="exp-dpi">300dpi</b>
+          </div>
+          <p class="exp-n" id="exp-note">5800 × 10000px · 60cm × 1m</p>
+          <button type="button" class="btn btn-line btn-sm" id="btn-dl-tile" style="display:none">1m 단위로 나눠 받기 (300dpi)</button>
         </div>
       </div>
     </aside>
@@ -1278,6 +1299,7 @@ function updateSummary(){
   var has = st.pl.length > 0;
   $('btn-dl').disabled = !has;
   $('btn-order').disabled = !has;
+  updateExportUI();
 }
 
 function updateBar(){
@@ -1349,13 +1371,50 @@ function maxPixels(){
   return mobile ? 26e6 : 120e6;
 }
 
+/* 한 장으로 내보낼 때의 실제 해상도 */
+function exportPlan(){
+  var k = 300/25.4;
+  var w = Math.round(SHEET_W*k), h = Math.round(st.len*k);
+  var cap = maxPixels(), dpi = 300, full = (w*h <= cap);
+  if(!full){
+    var f = Math.sqrt(cap/(w*h));
+    dpi = Math.max(100, Math.floor(300*f/10)*10);
+  }
+  return { k:k, w:w, h:h, cap:cap, dpi:dpi, full:full };
+}
+
+/* 300dpi를 유지하려면 몇 cm씩 나눠야 하는지 계산 */
+function tilePlan(){
+  var k = 300/25.4, w = Math.round(SHEET_W*k), cap = maxPixels();
+  var maxH = Math.floor(cap/w);
+  var maxMm = Math.max(100, Math.min(1000, Math.floor(maxH/k)));
+  var n = Math.ceil(st.len/maxMm);
+  return { k:k, w:w, maxMm:maxMm, n:n, split:(maxMm < 1000) };
+}
+
+function updateExportUI(){
+  if(!$('exp-dpi')) return;
+  var p = exportPlan(), t = tilePlan(), meters = st.len/1000;
+  var dpi = $('exp-dpi'), note = $('exp-note'), tb = $('btn-dl-tile');
+  dpi.textContent = p.dpi + 'dpi';
+  dpi.className = p.full ? '' : 'warn';
+  note.textContent = p.w.toLocaleString('ko-KR') + ' × ' + p.h.toLocaleString('ko-KR') + 'px · 60cm × ' + meters + 'm' +
+    (p.full ? ' · 전체 300dpi' : ' · 이 기기에서는 한 장에 담을 수 없어 해상도가 줄어듭니다');
+  var show = st.len > 1000;
+  tb.style.display = show ? '' : 'none';
+  if(show){
+    tb.textContent = (t.split ? ('최대 ' + cm(t.maxMm) + 'cm 단위로 나눠 받기') : '1m 단위로 나눠 받기') + ' (300dpi 보장)';
+  }
+}
+
 $('btn-dl').addEventListener('click', function(){
   if(!st.pl.length) return;
   var btn = this;
   btn.disabled = true;
   $('veil').classList.add('on');
   $('veil-t').textContent = '출력 파일을 만드는 중';
-  $('veil-s').textContent = cm(st.len) + 'cm 배치를 300dpi로 렌더링합니다';
+  var ep = exportPlan();
+  $('veil-s').textContent = cm(st.len) + 'cm 배치를 ' + ep.dpi + 'dpi로 렌더링합니다';
 
   setTimeout(function(){
     try{
@@ -1406,6 +1465,129 @@ function renderExport(){
     drawImg(xg, it.img, p.x*k, p.y*k, pw(p)*k, ph(p)*k, p.rot);
   }
   return {canvas:c, dpi:dpi};
+}
+
+/* ---------- 1m 단위 타일 내보내기 (300dpi 유지) ---------- */
+function renderTile(plan, index){
+  var startMm = index * plan.maxMm;
+  var lenMm = Math.min(plan.maxMm, st.len - startMm);
+  var c = document.createElement('canvas');
+  c.width = plan.w;
+  c.height = Math.max(1, Math.round(lenMm * plan.k));
+  var xg = c.getContext('2d');
+  xg.imageSmoothingEnabled = true;
+  xg.imageSmoothingQuality = 'high';
+  for(var i=0;i<st.pl.length;i++){
+    var p = st.pl[i], it = byId(p.iid);
+    if(!it || !it.img) continue;
+    var hMm = ph(p);
+    if(p.y + hMm <= startMm + 0.5) continue;          // 타일 위에서 끝남
+    if(p.y >= startMm + lenMm - 0.5) continue;        // 타일 아래에서 시작
+    drawImg(xg, it.img, p.x*plan.k, (p.y - startMm)*plan.k, pw(p)*plan.k, hMm*plan.k, p.rot);
+  }
+  return c;
+}
+
+/* ZIP (무압축 저장 방식) */
+var CRC_T = null;
+function crc32(u8){
+  if(!CRC_T){
+    CRC_T = [];
+    for(var n=0;n<256;n++){
+      var c = n;
+      for(var k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      CRC_T[n] = c >>> 0;
+    }
+  }
+  var crc = 0xFFFFFFFF;
+  for(var i=0;i<u8.length;i++) crc = CRC_T[(crc ^ u8[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStore(entries){
+  var enc = new TextEncoder();
+  var parts = [], central = [], offset = 0;
+  var d = new Date();
+  var tm = ((d.getHours()<<11) | (d.getMinutes()<<5) | Math.floor(d.getSeconds()/2)) & 0xFFFF;
+  var dt = (((d.getFullYear()-1980)<<9) | ((d.getMonth()+1)<<5) | d.getDate()) & 0xFFFF;
+  entries.forEach(function(e){
+    var name = enc.encode(e.name), data = e.bytes, crc = crc32(data);
+    var lh = new Uint8Array(30 + name.length), dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true);
+    dv.setUint16(8, 0, true); dv.setUint16(10, tm, true); dv.setUint16(12, dt, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, name.length, true); dv.setUint16(28, 0, true);
+    lh.set(name, 30);
+    parts.push(lh, data);
+    var ch = new Uint8Array(46 + name.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true); cv.setUint16(10, 0, true); cv.setUint16(12, tm, true); cv.setUint16(14, dt, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, name.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
+    ch.set(name, 46);
+    central.push(ch);
+    offset += lh.length + data.length;
+  });
+  var cdSize = central.reduce(function(a,b){ return a + b.length; }, 0);
+  var end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
+  ev.setUint16(8, entries.length, true); ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
+  return new Blob(parts.concat(central, [end]), {type:'application/zip'});
+}
+
+function saveBlob(blob, name){
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 5000);
+}
+
+if($('btn-dl-tile')){
+  $('btn-dl-tile').addEventListener('click', function(){
+    if(!st.pl.length){ toast('먼저 도안을 올려 주세요'); return; }
+    var plan = tilePlan(), btn = this;
+    btn.disabled = true;
+    $('veil').classList.add('on');
+    $('veil-t').textContent = '300dpi 타일을 만드는 중';
+    $('veil-s').textContent = plan.n + '개 타일로 나눕니다';
+    var entries = [], i = 0, cancelled = false;
+
+    function fail(){
+      $('veil').classList.remove('on');
+      btn.disabled = false;
+      toast('파일을 만들지 못했습니다. 길이를 줄여 다시 시도해 주세요');
+    }
+    function finish(){
+      var zip = zipStore(entries);
+      var name = 'PPP_60cm_' + (st.len/1000) + 'm_300dpi_' + today() + '.zip';
+      saveBlob(zip, name);
+      $('veil').classList.remove('on');
+      btn.disabled = false;
+      toast(name + ' 저장 · ' + plan.n + '장 · ' + (zip.size/1048576).toFixed(1) + 'MB');
+    }
+    function step(){
+      if(cancelled) return;
+      if(i >= plan.n){ finish(); return; }
+      $('veil-s').textContent = (i+1) + ' / ' + plan.n + ' 타일 렌더링';
+      setTimeout(function(){
+        try{
+          var c = renderTile(plan, i);
+          c.toBlob(function(blob){
+            if(!blob){ fail(); return; }
+            blob.arrayBuffer().then(function(ab){
+              entries.push({ name: 'PPP_60cm_' + (st.len/1000) + 'm_300dpi_' + (i+1) + 'of' + plan.n + '.png', bytes: new Uint8Array(ab) });
+              i++;
+              step();
+            }, fail);
+          }, 'image/png');
+        }catch(e){ fail(); }
+      }, 40);
+    }
+    step();
+  });
 }
 
 /* ---------- 리사이즈 ---------- */

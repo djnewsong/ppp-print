@@ -1,5 +1,10 @@
 /* PPP 타입 시스템: Pretendard(본문, SIL OFL) + Space Grotesk(영문/숫자, SIL OFL) + Instrument Serif(포인트, SIL OFL) */
 @font-face{
+  font-family:'Pretendard Variable';
+  src:url('PretendardVariable.woff2') format('woff2-variations');
+  font-weight:45 920;font-style:normal;font-display:swap;
+}
+@font-face{
   font-family:'Space Grotesk';
   src:url('fonts/space-grotesk-latin.woff2') format('woff2');
   font-weight:300 700;font-style:normal;font-display:swap;

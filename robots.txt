@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://djnewsong.github.io/ppp-print/sitemap.xml
