@@ -1,6 +1,6 @@
 # PPP | DTF 출력, 프레스 임가공, 완성티, 갱시트 빌더
 
-대구 직영 DTF 공장 PPP의 홈페이지입니다. 서버 없이 GitHub Pages에서 바로 돕니다.
+PPP(Print Piece People)의 상담과 주문 접수 페이지입니다. 서버 없이 GitHub Pages에서 바로 돕니다.
 
 ## 페이지
 
